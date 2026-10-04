@@ -25,7 +25,8 @@ class AI:
             self.client.chat.completions.create(
                 model=self.model,
                 messages=messages,
-                max_completion_tokens=1600,
+                max_completion_tokens=4000,
+                reasoning_effort="minimal",
                 **options,
             ),
             timeout=55,
