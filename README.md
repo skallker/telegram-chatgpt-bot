@@ -45,7 +45,7 @@ Copy-Item .env.example .env
 ```dotenv
 TELEGRAM_BOT_TOKEN=вставь_токен_от_BotFather
 OPENAI_API_KEY=вставь_ключ_OpenAI
-OPENAI_MODEL=gpt-4o-mini
+OPENAI_MODEL=gpt-5-nano
 ALLOWED_USER_IDS=
 ```
 
@@ -150,5 +150,5 @@ python -m unittest discover -s tests -v
 - [python-telegram-bot ConversationHandler](https://docs.python-telegram-bot.org/en/v22.5/telegram.ext.conversationhandler.html)
 
 API-интеграция использует Chat Completions для совместимости с моделью
-`gpt-4o-mini`, указанной в учебном задании. Секреты, данные пользователя
+`gpt-5-nano`, указанной в учебном задании. Секреты, данные пользователя
 и исходный файл с общим ключом группы в репозиторий не включены.
