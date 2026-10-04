@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parent.parent
 class Settings:
     telegram_token: str = field(repr=False)
     openai_key: str = field(repr=False)
-    model: str = "gpt-4o-mini"
+    model: str = "gpt-5-nano"
     allowed_ids: frozenset[int] = frozenset()
 
     @classmethod
@@ -36,6 +36,6 @@ class Settings:
         return cls(
             os.environ[names[0]].strip(),
             os.environ[names[1]].strip(),
-            os.getenv("OPENAI_MODEL", "gpt-4o-mini").strip(),
+            os.getenv("OPENAI_MODEL", "gpt-5-nano").strip(),
             allowed,
         )
