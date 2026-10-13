@@ -213,11 +213,11 @@ def keyboard(context, items=(), finish=True):
     if finish:
         rows.append(
             [
-            InlineKeyboardButton(
-                tr(context, "finish"),
-                callback_data=f"{nonce}|end",
-            )
-        ]
+                InlineKeyboardButton(
+                    tr(context, "finish"),
+                    callback_data=f"{nonce}|end",
+                )
+            ]
         )
     return InlineKeyboardMarkup(rows)
 
