@@ -432,6 +432,8 @@ async def command(update, context):
             f"{tr(context, 'help_language')}\n{tr(context, 'help_cancel')}",
         )
     else:
+        if session(context).get("lang") not in UI:
+            session(context)["lang"] = "en"
         await enter_mode(update, context, name)
         if name == "gpt" and context.args:
             await handle_text(update, context, " ".join(context.args))
