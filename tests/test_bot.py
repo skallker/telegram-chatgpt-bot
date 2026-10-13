@@ -60,6 +60,12 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
                 update.effective_message.reply_photo.assert_awaited_once()
                 self.assertEqual(session(context)["mode"], mode)
 
+    async def test_russian_mode_uses_existing_static_banner(self):
+        update, context, _ = fixture()
+        session(context)["lang"] = "ru"
+        await enter_mode(update, context, "gpt")
+        update.effective_message.reply_photo.assert_awaited_once()
+
     async def test_fact_again_and_finish(self):
         update, context, ai = fixture()
         await enter_mode(update, context, "random")
