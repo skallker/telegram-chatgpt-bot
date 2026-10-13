@@ -34,7 +34,9 @@ class Settings:
             raise ValueError(
                 "ALLOWED_USER_IDS: нужны числа через запятую"
             ) from None
-        effort = os.getenv("OPENAI_REASONING_EFFORT", "").strip().lower() or None
+        effort = (
+            os.getenv("OPENAI_REASONING_EFFORT", "").strip().lower() or None
+        )
         return cls(
             telegram_token=os.environ[names[0]].strip(),
             openai_key=os.environ[names[1]].strip(),
