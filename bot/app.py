@@ -16,6 +16,7 @@ from telegram.ext import (
 )
 
 from bot.ai import AI
+from bot.banners import english_banner_file
 from bot.config import ROOT
 
 LOG = logging.getLogger(__name__)
