@@ -178,7 +178,6 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
 
 
 class ValidationTests(unittest.IsolatedAsyncioTestCase):
-
     async def test_reasoning_effort_is_optional(self):
         response = SimpleNamespace(
             choices=[
