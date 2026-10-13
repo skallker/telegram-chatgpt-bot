@@ -35,12 +35,6 @@ class Settings:
                 "ALLOWED_USER_IDS: нужны числа через запятую"
             ) from None
         effort = os.getenv("OPENAI_REASONING_EFFORT", "").strip().lower() or None
-        valid_efforts = {"none", "minimal", "low", "medium", "high", "xhigh", "max"}
-        if effort not in valid_efforts and effort is not None:
-            raise ValueError(
-                "OPENAI_REASONING_EFFORT: use none, minimal, low, medium, "
-                "high, xhigh, max, or leave it empty"
-            )
         return cls(
             telegram_token=os.environ[names[0]].strip(),
             openai_key=os.environ[names[1]].strip(),
