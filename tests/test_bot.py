@@ -133,9 +133,9 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
         update, context, _ = fixture()
         session(context)["lang"] = "ru"
         await menu(update, context)
-        markup = (
-            update.effective_message.reply_text.call_args.kwargs["reply_markup"]
-        )
+        markup = update.effective_message.reply_text.call_args.kwargs[
+            "reply_markup"
+        ]
         labels = [item.text for row in markup.inline_keyboard for item in row]
         self.assertIn("Случайный факт", labels)
         self.assertIn("🌐 Сменить язык", labels)
@@ -145,9 +145,9 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
         context.user_data = {}
         update.effective_message.text = "/start"
         await command(update, context)
-        markup = (
-            update.effective_message.reply_text.call_args.kwargs["reply_markup"]
-        )
+        markup = update.effective_message.reply_text.call_args.kwargs[
+            "reply_markup"
+        ]
         labels = [item.text for row in markup.inline_keyboard for item in row]
         self.assertIn("🇬🇧 English", labels)
         self.assertIn("🇷🇺 Русский", labels)
@@ -190,9 +190,7 @@ class ValidationTests(unittest.IsolatedAsyncioTestCase):
         create = AsyncMock(return_value=response)
         ai = AI.__new__(AI)
         ai.client = SimpleNamespace(
-            chat=SimpleNamespace(
-                completions=SimpleNamespace(create=create)
-            )
+            chat=SimpleNamespace(completions=SimpleNamespace(create=create))
         )
         ai.model = "test-model"
         ai.reasoning_effort = None
