@@ -46,13 +46,15 @@ Copy-Item .env.example .env
 ```dotenv
 TELEGRAM_BOT_TOKEN=вставь_токен_от_BotFather
 OPENAI_API_KEY=вставь_ключ_OpenAI
-OPENAI_MODEL=gpt-5-nano
+OPENAI_MODEL=gpt-5.6-luna
+# Optional. Leave empty unless the selected model supports the chosen value.
+OPENAI_REASONING_EFFORT=
 ALLOWED_USER_IDS=
 ```
 
 Ключ OpenAI из учебного файла нужно вставить локально в `OPENAI_API_KEY`.
 Он намеренно не включён в проект. Доступность модели и бюджет зависят от ключа.
-При необходимости поменяй `OPENAI_MODEL` на доступную совместимую модель.
+При необходимости поменяй `OPENAI_MODEL` на доступную совместимую модель. `OPENAI_REASONING_EFFORT` вынесен отдельно: оставь его пустым, если не уверен, что выбранная модель поддерживает конкретное значение.
 `ALLOWED_USER_IDS` можно заполнить числовыми Telegram ID через запятую,
 чтобы ограничить доступ; пустое значение разрешает всех пользователей.
 
