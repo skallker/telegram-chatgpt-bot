@@ -12,7 +12,6 @@ from bot.app import (
     handle_text,
     keyboard,
     menu,
-    message,
     session,
     split_text,
 )
@@ -121,7 +120,11 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
     async def test_gpt_prompt_allows_english_and_translation(self):
         update, context, ai = fixture()
         await enter_mode(update, context, "gpt")
-        await handle_text(update, context, "Write a short product description.")
+        await handle_text(
+            update,
+            context,
+            "Write a short product description.",
+        )
         system = ai.complete.call_args.args[0]
         self.assertIn("same language", system)
         self.assertIn("translation", system)
@@ -130,7 +133,9 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
         update, context, _ = fixture()
         session(context)["lang"] = "ru"
         await menu(update, context)
-        markup = update.effective_message.reply_text.call_args.kwargs["reply_markup"]
+        markup = (
+            update.effective_message.reply_text.call_args.kwargs["reply_markup"]
+        )
         labels = [item.text for row in markup.inline_keyboard for item in row]
         self.assertIn("Случайный факт", labels)
         self.assertIn("🌐 Сменить язык", labels)
@@ -140,7 +145,9 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
         context.user_data = {}
         update.effective_message.text = "/start"
         await command(update, context)
-        markup = update.effective_message.reply_text.call_args.kwargs["reply_markup"]
+        markup = (
+            update.effective_message.reply_text.call_args.kwargs["reply_markup"]
+        )
         labels = [item.text for row in markup.inline_keyboard for item in row]
         self.assertIn("🇬🇧 English", labels)
         self.assertIn("🇷🇺 Русский", labels)
