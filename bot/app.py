@@ -241,8 +241,12 @@ async def say(update, text, markup=None):
         )
 
 
-async def banner(update, mode):
-    with (ROOT / "assets" / f"{mode}.png").open("rb") as picture:
+async def banner(update, context, mode):
+    language = ui_lang(context)
+    localized_path = ROOT / "assets" / f"{mode}_{language}.png"
+    fallback_path = ROOT / "assets" / f"{mode}.png"
+    path = localized_path if localized_path.exists() else fallback_path
+    with path.open("rb") as picture:
         await update.effective_message.reply_photo(picture)
 
 
@@ -381,7 +385,7 @@ async def enter_mode(update, context, mode):
     if mode not in MODES:
         return
     data = reset(context, mode)
-    await banner(update, mode)
+    await banner(update, context, mode)
     if mode == "random":
         await facts(update, context)
     elif mode == "gpt":
