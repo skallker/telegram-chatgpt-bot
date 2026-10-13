@@ -539,7 +539,8 @@ async def handle_text(update, context, text):
             "language or "
             "asks for a translation. If the user asks to translate, "
             "comply with the "
-            "requested target language. Never refuse a valid translation merely "
+            "requested target language. Never refuse a valid "
+            "translation merely "
             "because the interface language is different."
         )
         if mode == "talk":
