@@ -30,6 +30,9 @@ jobs:
       - name: Ruff check
         run: ruff check .
 
+      - name: Ruff format diff
+        run: ruff format --diff . || true
+
       - name: Ruff format check
         run: ruff format --check .
 
