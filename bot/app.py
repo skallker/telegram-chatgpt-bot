@@ -611,10 +611,8 @@ async def handle_text(update, context, text):
         if len(pending) < len(questions):
             await say(update, questions[len(pending)], keyboard(context))
         else:
-            details = "
-".join(
-                f"{question}
-{answer}" for question, answer in zip(questions, pending)
+            details = "\n".join(
+                f"{question}\n{answer}" for question, answer in zip(questions, pending)
             )
             language = "English" if ui_lang(context) == "en" else "Russian"
             result = await ai.complete(
