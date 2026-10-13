@@ -171,6 +171,34 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
 
 
 class ValidationTests(unittest.IsolatedAsyncioTestCase):
+
+    async def test_reasoning_effort_is_optional(self):
+        response = SimpleNamespace(
+            choices=[
+                SimpleNamespace(
+                    message=SimpleNamespace(content="ok"),
+                    finish_reason="stop",
+                )
+            ]
+        )
+        create = AsyncMock(return_value=response)
+        ai = AI.__new__(AI)
+        ai.client = SimpleNamespace(
+            chat=SimpleNamespace(
+                completions=SimpleNamespace(create=create)
+            )
+        )
+        ai.model = "test-model"
+        ai.reasoning_effort = None
+
+        result = await ai.complete("system", "hello")
+        self.assertEqual(result, "ok")
+        self.assertNotIn("reasoning_effort", create.call_args.kwargs)
+
+        ai.reasoning_effort = "low"
+        await ai.complete("system", "hello")
+        self.assertEqual(create.call_args.kwargs["reasoning_effort"], "low")
+
     async def test_rejects_string_boolean_and_missing_question(self):
         ai = AI.__new__(AI)
         ai.complete = AsyncMock(
