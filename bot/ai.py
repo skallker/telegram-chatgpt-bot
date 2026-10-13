@@ -7,9 +7,10 @@ from openai import AsyncOpenAI
 
 
 class AI:
-    def __init__(self, key, model):
+    def __init__(self, key, model, reasoning_effort=None):
         self.client = AsyncOpenAI(api_key=key, timeout=25, max_retries=1)
         self.model = model
+        self.reasoning_effort = reasoning_effort
 
     async def close(self):
         await self.client.close()
@@ -19,6 +20,8 @@ class AI:
         messages.extend(history)
         messages.append({"role": "user", "content": text})
         options = {}
+        if self.reasoning_effort:
+            options["reasoning_effort"] = self.reasoning_effort
         if as_json:
             options["response_format"] = {"type": "json_object"}
         response = await asyncio.wait_for(
