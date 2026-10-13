@@ -681,7 +681,8 @@ def build_application(settings, ai=None):
         .build()
     )
     application.bot_data.update(
-        settings=settings, ai=ai or AI(settings.openai_key, settings.model)
+        settings=settings,
+        ai=ai or AI(settings.openai_key, settings.model, settings.reasoning_effort),
     )
     entries = [
         CommandHandler(["start", "help", "cancel", "language", *MODES], command),
