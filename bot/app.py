@@ -243,11 +243,11 @@ async def say(update, text, markup=None):
 
 
 async def banner(update, context, mode):
-    language = ui_lang(context)
-    localized_path = ROOT / "assets" / f"{mode}_{language}.png"
-    fallback_path = ROOT / "assets" / f"{mode}.png"
-    path = localized_path if localized_path.exists() else fallback_path
-    with path.open("rb") as picture:
+    if ui_lang(context) == "en":
+        await update.effective_message.reply_photo(english_banner_file(mode))
+        return
+
+    with (ROOT / "assets" / f"{mode}.png").open("rb") as picture:
         await update.effective_message.reply_photo(picture)
 
 
