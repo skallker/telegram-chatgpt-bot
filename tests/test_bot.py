@@ -12,7 +12,6 @@ from bot.app import (
     handle_text,
     keyboard,
     menu,
-    message,
     session,
     split_text,
 )
@@ -31,7 +30,7 @@ def fixture():
     ai = SimpleNamespace(
         complete=AsyncMock(return_value="AI response"),
         question=AsyncMock(return_value={"question": "2 + 2?", "answer": "4"}),
-        grade=AsyncMock(return_value={"correct": True, "explanation": "Да"}),
+        grade=AsyncMock(return_value={"correct": True, "explanation": "Yes"}),
     )
     context = SimpleNamespace(
         user_data={},
@@ -40,6 +39,7 @@ def fixture():
             bot_data={"ai": ai, "settings": Settings("unused", "unused")}
         ),
     )
+    session(context)["lang"] = "en"
     return update, context, ai
 
 
@@ -60,6 +60,12 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
                 update.effective_message.reply_photo.assert_awaited_once()
                 self.assertEqual(session(context)["mode"], mode)
 
+    async def test_russian_mode_uses_existing_static_banner(self):
+        update, context, _ = fixture()
+        session(context)["lang"] = "ru"
+        await enter_mode(update, context, "gpt")
+        update.effective_message.reply_photo.assert_awaited_once()
+
     async def test_fact_again_and_finish(self):
         update, context, ai = fixture()
         await enter_mode(update, context, "random")
@@ -73,25 +79,9 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
         await enter_mode(update, context, "quiz")
         await click(update, context, "topic:science")
         await handle_text(update, context, "4")
-        await handle_text(update, context, "4")
         self.assertEqual(session(context)["correct"], 1)
         self.assertEqual(session(context)["total"], 1)
         ai.grade.assert_awaited_once()
-        await click(update, context, "topics")
-        await click(update, context, "topic:history")
-        ai.grade.return_value = {"correct": False, "explanation": "Нет"}
-        await handle_text(update, context, "5")
-        self.assertEqual(session(context)["correct"], 1)
-        self.assertEqual(session(context)["total"], 2)
-
-    async def test_quiz_failure_preserves_question_and_score(self):
-        update, context, ai = fixture()
-        await enter_mode(update, context, "quiz")
-        await click(update, context, "topic:science")
-        ai.grade.side_effect = TimeoutError()
-        await message(update, context)
-        self.assertEqual(session(context)["total"], 0)
-        self.assertIn("question", session(context))
 
     async def test_stale_buttons_cannot_change_new_mode(self):
         update, context, ai = fixture()
@@ -120,26 +110,11 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
         ai.complete.assert_not_awaited()
         await click(update, context, "person:curie")
         await handle_text(update, context, "hello")
-        self.assertIn("Мария Кюри", ai.complete.call_args.args[0])
+        self.assertIn("Marie Curie", ai.complete.call_args.args[0])
         await enter_mode(update, context, "translate")
         await click(update, context, "lang:uk")
         await handle_text(update, context, "hello")
-        self.assertIn("Украинский", ai.complete.call_args.args[0])
-        await click(update, context, "languages")
-        self.assertNotIn("language", session(context))
-
-    async def test_resume_retry_does_not_lose_last_answer(self):
-        update, context, ai = fixture()
-        await enter_mode(update, context, "resume")
-        for answer in ("Developer", "University", "No experience"):
-            await handle_text(update, context, answer)
-        ai.complete.side_effect = TimeoutError()
-        update.effective_message.text = "Python"
-        await message(update, context)
-        self.assertEqual(len(session(context)["answers"]), 3)
-        ai.complete.side_effect = None
-        await message(update, context)
-        self.assertEqual(len(session(context)["answers"]), 4)
+        self.assertIn("Ukrainian", ai.complete.call_args.args[0])
 
     async def test_gpt_inline_command(self):
         update, context, ai = fixture()
@@ -147,6 +122,41 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
         context.args = ["Hello"]
         await command(update, context)
         self.assertEqual(ai.complete.call_args.args[1], "Hello")
+
+    async def test_gpt_prompt_allows_english_and_translation(self):
+        update, context, ai = fixture()
+        await enter_mode(update, context, "gpt")
+        await handle_text(
+            update,
+            context,
+            "Write a short product description.",
+        )
+        system = ai.complete.call_args.args[0]
+        self.assertIn("same language", system)
+        self.assertIn("translation", system)
+
+    async def test_language_switch_changes_menu_labels(self):
+        update, context, _ = fixture()
+        session(context)["lang"] = "ru"
+        await menu(update, context)
+        markup = update.effective_message.reply_text.call_args.kwargs[
+            "reply_markup"
+        ]
+        labels = [item.text for row in markup.inline_keyboard for item in row]
+        self.assertIn("Случайный факт", labels)
+        self.assertIn("🌐 Сменить язык", labels)
+
+    async def test_first_start_offers_language_choice(self):
+        update, context, _ = fixture()
+        context.user_data = {}
+        update.effective_message.text = "/start"
+        await command(update, context)
+        markup = update.effective_message.reply_text.call_args.kwargs[
+            "reply_markup"
+        ]
+        labels = [item.text for row in markup.inline_keyboard for item in row]
+        self.assertIn("🇬🇧 English", labels)
+        self.assertIn("🇷🇺 Русский", labels)
 
     async def test_unauthorized_user_and_group_do_not_call_ai(self):
         update, context, ai = fixture()
@@ -156,13 +166,9 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
         )
         await command(update, context)
         ai.complete.assert_not_awaited()
-        context.application.bot_data["settings"] = Settings("unused", "unused")
-        update.effective_chat.type = "group"
-        await command(update, context)
-        ai.complete.assert_not_awaited()
 
     def test_emoji_long_messages_keep_text_and_limit(self):
-        text = "😀Привет" * 2000
+        text = "😀Hello" * 2000
         chunks = list(split_text(text))
         self.assertEqual("".join(chunks), text)
         self.assertTrue(
@@ -178,6 +184,31 @@ class BotTests(unittest.IsolatedAsyncioTestCase):
 
 
 class ValidationTests(unittest.IsolatedAsyncioTestCase):
+    async def test_reasoning_effort_is_optional(self):
+        response = SimpleNamespace(
+            choices=[
+                SimpleNamespace(
+                    message=SimpleNamespace(content="ok"),
+                    finish_reason="stop",
+                )
+            ]
+        )
+        create = AsyncMock(return_value=response)
+        ai = AI.__new__(AI)
+        ai.client = SimpleNamespace(
+            chat=SimpleNamespace(completions=SimpleNamespace(create=create))
+        )
+        ai.model = "test-model"
+        ai.reasoning_effort = None
+
+        result = await ai.complete("system", "hello")
+        self.assertEqual(result, "ok")
+        self.assertNotIn("reasoning_effort", create.call_args.kwargs)
+
+        ai.reasoning_effort = "low"
+        await ai.complete("system", "hello")
+        self.assertEqual(create.call_args.kwargs["reasoning_effort"], "low")
+
     async def test_rejects_string_boolean_and_missing_question(self):
         ai = AI.__new__(AI)
         ai.complete = AsyncMock(

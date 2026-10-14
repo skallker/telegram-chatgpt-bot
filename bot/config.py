@@ -13,7 +13,8 @@ ROOT = Path(__file__).resolve().parent.parent
 class Settings:
     telegram_token: str = field(repr=False)
     openai_key: str = field(repr=False)
-    model: str = "gpt-5-nano"
+    model: str = "gpt-5.6-luna"
+    reasoning_effort: str | None = None
     allowed_ids: frozenset[int] = frozenset()
 
     @classmethod
@@ -33,9 +34,13 @@ class Settings:
             raise ValueError(
                 "ALLOWED_USER_IDS: нужны числа через запятую"
             ) from None
+        effort = (
+            os.getenv("OPENAI_REASONING_EFFORT", "").strip().lower() or None
+        )
         return cls(
-            os.environ[names[0]].strip(),
-            os.environ[names[1]].strip(),
-            os.getenv("OPENAI_MODEL", "gpt-5-nano").strip(),
-            allowed,
+            telegram_token=os.environ[names[0]].strip(),
+            openai_key=os.environ[names[1]].strip(),
+            model=os.getenv("OPENAI_MODEL", "gpt-5.6-luna").strip(),
+            reasoning_effort=effort,
+            allowed_ids=allowed,
         )
